@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "karim-sticker-studio"
+version = "1.0.0"
+description = "Professional sticker studio for Karim Parfums"
+requires-python = ">=3.9"
+dependencies = [
+    "reportlab==4.4.3",
+    "qrcode[pil]==8.2",
+    "Pillow==11.3.0",
+]
+
+[project.gui-scripts]
+karim-sticker-studio = "main:main"
