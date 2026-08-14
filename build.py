@@ -27,15 +27,25 @@ def main():
     # 2. Install requirements
     run("pip install -r requirements.txt", "Installing app dependencies")
 
-    # 3. Build exe
+    # 3. Check for custom icon
+    icon_flag = ""
+    if os.path.exists("assets/icon.ico"):
+        icon_flag = ' --icon="assets/icon.ico"'
+        print("\n  Icon found: assets/icon.ico")
+    else:
+        print("\n  No icon found - using default Windows icon")
+        print("  (Create assets/icon.ico to use a custom app icon)")
+
+    # 4. Build exe
     run(
-        'pyinstaller '
+        'python -m PyInstaller '
         '--onefile '
         '--windowed '
         '--name "KarimStickerStudio" '
         '--hidden-import PIL._tkinter_finder '
         '--hidden-import qrcode.image.pil '
         '--clean '
+        f'{icon_flag} '
         'main.py',
         "Building standalone .exe"
     )
