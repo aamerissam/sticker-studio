@@ -221,8 +221,6 @@ class StickerStudio:
 
         # --- Editor widgets packed into self.scroll_e ---
         self._section(self.scroll_e, "IDENTITE")
-        self._input_field(self.scroll_e, "Marque", self.brand_var, placeholder="KARIM")
-        self._input_field(self.scroll_e, "Nom du parfum", self.parfum_var, placeholder="Fahrenheit")
 
         self._section(self.scroll_e, "APPARENCE")
         g_frame = tk.Frame(self.scroll_e, bg="#12121F")
@@ -262,9 +260,7 @@ class StickerStudio:
 
         self._section(self.scroll_e, "CONTACT")
         self._input_field(self.scroll_e, "Lien Instagram / QR", self.insta_var,
-                          placeholder="https://instagram.com/...")
         self._input_field(self.scroll_e, "Telephone", self.phone_var,
-                          placeholder="07 75 36 73 51")
 
         self._section(self.scroll_e, "STYLE DU TELEPHONE")
         tk.Label(self.scroll_e, text="Couleur du texte", font=("Helvetica", 9),
@@ -335,7 +331,6 @@ class StickerStudio:
         tk.Label(parent, text=text, font=("Helvetica", 9, "bold"),
                  bg="#12121F", fg="#444").pack(anchor="w", pady=(0, 10), padx=5)
 
-    def _input_field(self, parent, label, var, placeholder=""):
         frame = tk.Frame(parent, bg="#12121F")
         frame.pack(fill="x", pady=(0, 12), padx=5)
         tk.Label(frame, text=label, font=("Helvetica", 9),
@@ -347,20 +342,6 @@ class StickerStudio:
                          highlightcolor="#1F5EFF",
                          insertbackground="white")
         entry.pack(fill="x", pady=(4, 0), ipady=10)
-        if placeholder:
-            entry.insert(0, placeholder)
-            entry.bind("<FocusIn>", lambda e: self._on_entry_focus(entry, var, placeholder))
-            entry.bind("<FocusOut>", lambda e: self._on_entry_blur(entry, var, placeholder))
-
-    def _on_entry_focus(self, entry, var, placeholder):
-        if var.get() == placeholder:
-            var.set("")
-            entry.config(fg="white")
-
-    def _on_entry_blur(self, entry, var, placeholder):
-        if var.get().strip() == "":
-            var.set(placeholder)
-            entry.config(fg="#555")
 
     def set_mode(self, mode, index=None):
         self.mode = mode
