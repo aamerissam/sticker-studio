@@ -37,7 +37,8 @@ def main():
     hidden_imports = [
         "app", "config", "qr_generator", "pdf_renderer", "preview_renderer",
         "ui_components", "file_controller", "gallery_controller", "lot_controller",
-        "pdf_controller", "preview_controller", "state_controller", "ui_builder"
+        "pdf_controller", "preview_controller", "state_controller", "ui_builder",
+        "PIL._tkinter_finder", "qrcode.image.pil"
     ]
     hidden_flags = " ".join([f'--hidden-import {m}' for m in hidden_imports])
 
