@@ -3,6 +3,7 @@
 import subprocess
 import sys
 import os
+import glob
 
 
 def run(cmd, desc):
@@ -21,32 +22,34 @@ def main():
     print("Karim Sticker Studio - Windows Builder")
     print("=" * 50)
 
+    # Clean up old .spec files to prevent corruption reuse
+    for spec in glob.glob("*.spec"):
+        print(f"Removing old spec: {spec}")
+        os.remove(spec)
+
     # 1. Install pyinstaller
     run("pip install pyinstaller", "Installing PyInstaller")
 
     # 2. Install requirements
     run("pip install -r requirements.txt", "Installing app dependencies")
 
-    # 3. Check for custom icon
-    icon_flag = ""
-    if os.path.exists("assets/icon.ico"):
-        icon_flag = ' --icon="assets/icon.ico"'
-        print("\n  Icon found: assets/icon.ico")
-    else:
-        print("\n  No icon found - using default Windows icon")
-        print("  (Create assets/icon.ico to use a custom app icon)")
+    # 3. Build exe with all hidden imports
+    hidden_imports = [
+        "app", "config", "qr_generator", "pdf_renderer", "preview_renderer",
+        "ui_components", "file_controller", "gallery_controller", "lot_controller",
+        "pdf_controller", "preview_controller", "state_controller", "ui_builder"
+    ]
+    hidden_flags = " ".join([f'--hidden-import {m}' for m in hidden_imports])
 
-    # 4. Build exe
     run(
-        'python -m PyInstaller '
-        '--onefile '
-        '--windowed '
-        '--name "KarimStickerStudio" '
-        '--hidden-import PIL._tkinter_finder '
-        '--hidden-import qrcode.image.pil '
-        '--clean '
-        f'{icon_flag} '
-        'main.py',
+        f'python -m PyInstaller '
+        f'--onefile '
+        f'--windowed '
+        f'--name "KarimStickerStudio" '
+        f'{hidden_flags} '
+        f'--clean '
+        f'--noconfirm '
+        f'main.py',
         "Building standalone .exe"
     )
 
@@ -57,7 +60,7 @@ def main():
         print(f"  File: {exe_path}")
         print("=" * 50)
     else:
-        print("\nWARNING: Build completed but .exe not found at expected path.")
+        print("\nWARNING: Build completed but .exe not found.")
 
     input("\nPress Enter to exit...")
 
