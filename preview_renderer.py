@@ -118,14 +118,43 @@ def render_preview(cfg, brand, parfum, phone, insta, get_font_func, qr_cache_fun
     line_y = karim_y + 38
     line_w = W * 0.38
     draw.line([(W/2 - line_w/2, line_y), (W/2 + line_w/2, line_y)], fill="white", width=3)
+
+    # ── PARFUM: wrap long names ──
     parfum_y = line_y + 20
+    max_text_w = W - 50
+
+    # Reduce font if full text too wide
     bbox = draw.textbbox((0, 0), parfum, font=f_name)
     tw = bbox[2] - bbox[0]
-    if tw > W - 50:
+    if tw > max_text_w:
         f_name = get_font_func("arialbd.ttf", 20)
         bbox = draw.textbbox((0, 0), parfum, font=f_name)
         tw = bbox[2] - bbox[0]
-    draw.text(((W - tw) / 2, parfum_y), parfum, fill="white", font=f_name)
+
+    # Wrap into multiple lines
+    words = parfum.split()
+    lines = []
+    current_line = []
+    for word in words:
+        test_line = ' '.join(current_line + [word])
+        bbox = draw.textbbox((0, 0), test_line, font=f_name)
+        if bbox[2] - bbox[0] <= max_text_w:
+            current_line.append(word)
+        else:
+            if current_line:
+                lines.append(' '.join(current_line))
+            current_line = [word]
+    if current_line:
+        lines.append(' '.join(current_line))
+
+    line_height = int(f_name.size * 1.25)
+    for i, line in enumerate(lines):
+        bbox = draw.textbbox((0, 0), line, font=f_name)
+        tw = bbox[2] - bbox[0]
+        ly = parfum_y + i * line_height
+        draw.text(((W - tw) / 2, ly), line, fill="white", font=f_name)
+
+    parfum_bottom = parfum_y + len(lines) * line_height + 8
     phone_y = bottom_zone - 30
     bbox = draw.textbbox((0, 0), phone, font=f_phone)
     tw_phone = bbox[2] - bbox[0]
@@ -141,12 +170,13 @@ def render_preview(cfg, brand, parfum, phone, insta, get_font_func, qr_cache_fun
         draw.rounded_rectangle([box_x, box_y, box_x + box_w, box_y + box_h_px],
                                radius=3, outline=contrast_rgb, width=2)
     draw.text(((W - tw_phone) / 2, phone_y), phone, fill=phone_color_rgb, font=f_phone)
-    parfum_bottom = parfum_y + (bbox[3] - bbox[1]) + 8
+
     phone_top = phone_y - 8
     available_h = phone_top - parfum_bottom
     qr_y = parfum_bottom + (available_h - qr_size) / 2
     qr_x = (W - qr_size) / 2
     sticker.paste(qr_img, (int(qr_x), int(qr_y)), qr_img)
+
     preview_w, preview_h = 280, 390
     preview_img = sticker.resize((preview_w, preview_h), Image.LANCZOS)
     framed = Image.new("RGBA", (preview_w + 30, preview_h + 30), (14, 14, 26, 255))

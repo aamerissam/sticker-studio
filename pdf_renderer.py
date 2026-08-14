@@ -161,25 +161,39 @@ def draw_single_sticker_pdf(c, x, y, w, h, cfg, qr_path):
     line_w = w * 0.40
     c.line(x + w / 2 - line_w / 2, line_y, x + w / 2 + line_w / 2, line_y)
 
-    # ── PARFUM: beginText + fudge-factor centering ──
+    # ── PARFUM: wrap long names into multiple lines ──
     parfum_pt = 8
     c.setFont("Helvetica-Bold", parfum_pt)
     max_w = w - 5 * mm
     while c.stringWidth(parfum_name, "Helvetica-Bold", parfum_pt) > max_w and parfum_pt > 5:
         parfum_pt -= 0.5
         c.setFont("Helvetica-Bold", parfum_pt)
-    parfum_w = c.stringWidth(parfum_name, "Helvetica-Bold", parfum_pt)
+
+    # Wrap text into lines that fit within max width
+    words = parfum_name.split()
+    lines = []
+    current_line = []
+    for word in words:
+        test_line = ' '.join(current_line + [word])
+        if c.stringWidth(test_line, "Helvetica-Bold", parfum_pt) * FONT_METRIC_FUDGE <= max_w:
+            current_line.append(word)
+        else:
+            if current_line:
+                lines.append(' '.join(current_line))
+            current_line = [word]
+    if current_line:
+        lines.append(' '.join(current_line))
+
+    leading = parfum_pt * 1.2
     parfum_y = line_y - 2.2 * mm - parfum_pt * 0.35
 
-    # Apply fudge: stringWidth underestimates actual rendered width by ~6%
-    # Use effective_w for centering so text is shifted left to compensate
-    effective_parfum_w = parfum_w * FONT_METRIC_FUDGE
-    txt_p = c.beginText()
-    txt_p.setFillColor(white)
-    txt_p.setFont("Helvetica-Bold", parfum_pt)
-    txt_p.setTextOrigin(x + (w - effective_parfum_w) / 2, parfum_y)
-    txt_p.textOut(parfum_name)
-    c.drawText(txt_p)
+    for i, line in enumerate(lines):
+        line_w = c.stringWidth(line, "Helvetica-Bold", parfum_pt) * FONT_METRIC_FUDGE
+        line_y = parfum_y - i * leading
+        c.drawString(x + (w - line_w) / 2, line_y, line)
+
+    # Calculate bottom of text block for QR positioning
+    text_block_bottom = parfum_y - (len(lines) - 1) * leading - parfum_pt * 0.2
 
     # ── PHONE: fixed-width box + fudge-factor centering ──
     phone_pt = 6
@@ -213,7 +227,7 @@ def draw_single_sticker_pdf(c, x, y, w, h, cfg, qr_path):
 
     # ── QR CODE ──
     qr_mm = min(15.5 * mm, w - 5 * mm)
-    space_top = parfum_y - 1.5 * mm
+    space_top = text_block_bottom - 1.5 * mm
     space_bottom = phone_y + 2.5 * mm
     available_h = space_top - space_bottom
     qr_x = x + (w - qr_mm) / 2
